@@ -2,12 +2,6 @@
 name: Monitor de Site UFSCar
 
 # Gatilho: quando o robô deve rodar
-on:
-  schedule:
-    # A cada 10 minutos
-    - cron: '*/10 * * * *'
-  workflow_dispatch: # Permite rodar manualmente também
-
 # Tarefas: o que o robô deve fazer
 jobs:
   verificar-site:
