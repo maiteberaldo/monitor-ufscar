@@ -1,0 +1,52 @@
+# Nome do nosso robô
+name: Monitor de Site UFSCar
+
+# Gatilho: quando o robô deve rodar
+on:
+  schedule:
+    # A cada 5 minutos
+    - cron: '*/5 * * * *'
+  workflow_dispatch: # Permite rodar manualmente também
+
+# Tarefas: o que o robô deve fazer
+jobs:
+  verificar-site:
+    runs-on: ubuntu-latest # O tipo de computador do robô
+    steps:
+      # Passo 1: Baixar o código do repositório
+      - name: Baixar o código
+        uses: actions/checkout@v3
+
+      # Passo 2: Configurar o Python
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      # Passo 3: Restaurar o arquivo de hash salvo (cache)
+      - name: Restaurar hash anterior
+        uses: actions/cache@v3
+        id: cache-hash
+        with:
+          path: hash_site_ufscar.txt
+          key: ${{ runner.os }}-hash-file
+
+      # Passo 4: Instalar as bibliotecas do requirements.txt
+      - name: Instalar dependências
+        run: pip install -r requirements.txt
+
+      # Passo 5: Rodar o script Python!
+      - name: Executar o script de monitoramento
+        env:
+          # Passa os segredos para o script de forma segura
+          GMAIL_USER: ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_PASS: ${{ secrets.GMAIL_APP_PASSWORD }}
+        run: python monitora_site.py
+
+      # Passo 6: Salvar o novo arquivo de hash (se ele mudou)
+      - name: Salvar novo hash
+        uses: actions/cache/save@v3
+        if: steps.cache-hash.outputs.cache-hit != 'true'
+        with:
+          path: hash_site_ufscar.txt
+          key: ${{ runner.os }}-hash-file
